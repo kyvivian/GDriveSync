@@ -1,21 +1,19 @@
-package org.o7planning.gogledrive.example;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
-import org.o7planning.googledrive.utils.GoogleDriveUtils;
+import main.java.utils.GoogleDriveUtils;
 
 import com.google.api.client.http.AbstractInputStreamContent;
-import com.google.api.client.http.ByteArray;
+import com.google.api.client.http.ByteArrayContent;
 import com.google.api.client.http.FileContent;
 import com.google.api.client.http.InputStreamContent;
 import com.google.api.services.drive.Drive;
-import com.google.api.serices.dirve.model.File;
+import com.google.api.services.drive.model.File;
 
 public class CreateGoogleFile {
-    private static File _createGoogleFile(String googleFolderIdParent, String contentType
+    private static File _createGoogleFile(String googleFolderIdParent, String contentType,
         String customFileName, AbstractInputStreamContent uploadStreamContent) throws IOException {
             
             File fileMetadata = new File();
@@ -26,7 +24,7 @@ public class CreateGoogleFile {
 
             Drive driveService = GoogleDriveUtils.getDriveService();
 
-            File file = driveSErvice.files.create(fileMetadata, uploadStreamContent).setFields("id, webContentLink, webViewLink, parents").execute();
+            File file = driveService.files().create(fileMetadata, uploadStreamContent).setFields("id, webContentLink, webViewLink, parents").execute();
 
             return file;
     }
@@ -46,12 +44,12 @@ public class CreateGoogleFile {
 
             AbstractInputStreamContent uploadStreamContent = new FileContent(contentType, uploadFile);
 
-            return _createGoogleFile(googleFolderIdPArent, contentType, customFileName, uploadStreamContent);
+            return _createGoogleFile(googleFolderIdParent, contentType, customFileName, uploadStreamContent);
     }
 
     //Create Google File from InputStream
     public static File createGoogleFile(String googleFolderIdParent, String contentType,
-        String customFileName, InputStream inputstream) throws IOException {
+        String customFileName, InputStream inputStream) throws IOException {
 
             AbstractInputStreamContent uploadStreamContent = new InputStreamContent(contentType, inputStream);
 
@@ -61,8 +59,7 @@ public class CreateGoogleFile {
     public static void main(String[] args) throws IOException {
         //placeholder File
         //update to make generic 
-        java.io.File uploadFile = new java.io.File("c/Users/Vivian Ky/Desktop/email.txt");
-
+        java.io.File uploadFile = new java.io.File(System.getProperty("user.home"), "Desktop\\email.txt");
         //Create Google File
         File googleFile = createGoogleFile(null, "text/plain", "newfile.txt", uploadFile);
 
