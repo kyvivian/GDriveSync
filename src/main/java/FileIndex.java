@@ -4,7 +4,7 @@ public class FileIndex {
     private File root_dir;
 
     public FileIndex(String root_dir) {
-        this.root_dir = root_dir;
+        this.root_dir = new File(root_dir);
     }
 
     /* Creates a hidden index file that stores all the  
@@ -22,6 +22,8 @@ public class FileIndex {
             return -1;
         }
         File index = new File(cur_dir, ".index.txt");
+
+        return 1;
     }
 
 }
