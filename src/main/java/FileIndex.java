@@ -4,12 +4,37 @@ import java.io.BufferedWriter;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.Files;
 
 public class FileIndex {
+    private final static String INDEX = ".index.txt";
     private File root_dir;
 
     public FileIndex(String root_dir) {
         this.root_dir = new File(root_dir);
+    }
+
+    public File getRoot() {
+        return root_dir;
+    }
+
+    private boolean hideFile(File f) throws IOException {
+        boolean hidden = f.isHidden();
+
+        if(hidden) {
+            return hidden;
+        }
+
+        Path path = Paths.get(f.getPath());
+
+        Files.setAttribute(path, "dos:hidden", true, LinkOption.NOFOLLOW_LINKS);
+
+        hidden = f.isHidden();
+
+        return hidden;
     }
 
     /*
@@ -26,7 +51,12 @@ public class FileIndex {
         if(!cur_dir.isDirectory()) {
             return false;
         }
-        File index = new File(cur_dir, ".index.txt");
+        File index = new File(cur_dir, INDEX);
+
+        if(index.exists()) {
+            System.out.println("index already exists");
+            return true;
+        }
 
         //get the index list 
         String[] fileList = root_dir.list();
@@ -57,6 +87,12 @@ public class FileIndex {
             }
         catch (Exception ex) {System.out.println("couldn't close index properly");}
         }
+
+        //hide the index file
+        boolean hide = hideFile(index);
+        String h = hide ? "true" : "false";
+        System.out.println("hide index is " + h);
+
         return true;
         
     }
@@ -73,7 +109,7 @@ public class FileIndex {
         }
     }
 
-    public void syncIndex(File syncFolder) {
+    public void syncAllIndex(File syncFolder) throws IOException {
         String[] fileList = syncFolder.list();
 
         for(String f : fileList) {
@@ -83,19 +119,31 @@ public class FileIndex {
                 //System.out.println(cur_file.getName() + " is a directory");
                 syncIndex(cur_file);
             }
-            else {
-                //System.out.println(cur_file.getName() + " is a file");
-                System.out.println(cur_file.getName());
-            }
-
         }
+    }
+
+    public void syncIndex(File syncFolder) throws IOException {
+        File index = new File(syncFolder,  INDEX);
+
+        boolean haveIndex = index.exists();
+
+        if(!haveIndex) {
+            createIndex(syncFolder);
+        }
+
+
     }
 
     public static void main(String[] args) throws IOException {
         File root = new File("C:\\Users\\Vivian Ky\\Desktop\\X1");
         FileIndex ind = new FileIndex("C:\\Users\\Vivian Ky\\Desktop\\X1");
+        ind.createIndex(ind.getRoot());
+        ind.listFiles();
         //ind.syncIndex(new File("C:\\Users\\Vivian Ky\\Desktop\\X1\\3+"));
-        ind.createIndex(root);
+        /*String[]  list = root.list();
+        for(String a : list) {
+            System.out.println(a);
+        }*/
     }
 
 }
