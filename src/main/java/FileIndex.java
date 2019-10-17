@@ -7,20 +7,37 @@ import java.io.Writer;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.nio.file.Files;
 
 public class FileIndex {
     private final static String INDEX = ".index.txt";
     private File root_dir;
 
+    /**  Constructor
+     * Takes in a String that indicates the absolute file path of the directory
+     * that syncs the index file
+     */
     public FileIndex(String root_dir) {
         this.root_dir = new File(root_dir);
     }
 
+    /** 
+     * Returns the root File 
+     */
     public File getRoot() {
         return root_dir;
     }
 
+    /**
+     * Hides File f
+     * 
+     * Returns true if able to hide, false if some error occurred.
+     */
     private boolean hideFile(File f) throws IOException {
         boolean hidden = f.isHidden();
 
@@ -37,6 +54,18 @@ public class FileIndex {
         return hidden;
     }
 
+    /**
+     * Returns true if index file exists; false otherwise
+     * @param cur_dir
+     * @return
+     * @throws IOException
+     */
+    public boolean indexExists(File f) {
+        File cur = new File(f, INDEX);
+
+        return cur.exists();
+    }
+
     /*
      * Creates a hidden index file that stores all the files/dirs of the current
      * directory
@@ -51,15 +80,12 @@ public class FileIndex {
         if(!cur_dir.isDirectory()) {
             return false;
         }
+
         File index = new File(cur_dir, INDEX);
 
-        if(index.exists()) {
-            System.out.println("index already exists");
-            return true;
+        if(indexExists(cur_dir)) {
+            Files.delete(index.toPath());
         }
-
-        //get the index list 
-        String[] fileList = root_dir.list();
 
         //create the file .index.txt
         boolean createdFile = index.createNewFile();
@@ -68,11 +94,15 @@ public class FileIndex {
             return false;
         }
 
+        //get the index list 
+        String[] fileList = root_dir.list();
+
         Writer writeFile = null;
 
         //write to .index.txt and then close the file
         try {
             writeFile = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(index.getPath()), "utf-8"));
+            writeFile.write(fileList.length + "\n\n");
             for (String a: fileList) {
                 writeFile.write(a + "\n");
             }
@@ -89,14 +119,15 @@ public class FileIndex {
         }
 
         //hide the index file
-        boolean hide = hideFile(index);
-        String h = hide ? "true" : "false";
-        System.out.println("hide index is " + h);
+        hideFile(index);
 
         return true;
         
     }
-    
+
+    /**
+     * Prints out all the files in the directory.
+     */
     public void listFiles() {
         if(!root_dir.isDirectory()) {
             System.out.println("root is not a directory");
@@ -109,6 +140,12 @@ public class FileIndex {
         }
     }
 
+    /**
+     * Syncs the current directory and directories inside it until all 
+     * folder/files are synced 
+     * @param syncFolder
+     * @throws IOException
+     */
     public void syncAllIndex(File syncFolder) throws IOException {
         String[] fileList = syncFolder.list();
 
@@ -122,23 +159,93 @@ public class FileIndex {
         }
     }
 
+    /**
+     * Syncs only the current directory
+     */
     public void syncIndex(File syncFolder) throws IOException {
-        File index = new File(syncFolder,  INDEX);
+        createIndex(syncFolder);
 
-        boolean haveIndex = index.exists();
 
-        if(!haveIndex) {
-            createIndex(syncFolder);
+
+
+    }
+
+    public List<String> union(List<String> list1, List<String> list2) {
+        Set<String> set = new HashSet<String>();
+
+        set.addAll(list1);
+        set.addAll(list2);
+
+        return new ArrayList<String>(set);
+    }
+
+    public List<String> intersection(List<String> list1, List<String> list2) {
+        List<String> list = new ArrayList<String>();
+
+        for(String a : list1) {
+            if(list2.contains(a)) {
+                list.add(a);
+            }
         }
 
+        return list;
+    }
+
+    /**
+     * Gets the difference between the index and the current list of files
+     * in the directory and then updates the index
+     * 
+     * @param args
+     * @throws IOException
+     */
+    public List<String> indexDiff(File cur_dir) throws IOException {
+        String [] cur_list = cur_dir.list();
+
+        File ind = new File(cur_dir, INDEX);
+
+        List<String> oldInd = Files.readAllLines(ind.toPath());
+        List<String> newInd = new ArrayList<String>(Arrays.asList(cur_list));
+         
+        int oldCnt = Integer.parseInt(oldInd.get(0));
+        System.out.println("cnt is " + oldCnt);
+
+        if(cur_list.length > oldCnt) {
+            newInd.removeAll(intersection(oldInd, newInd));
+        }
+        else if (cur_list.length == oldCnt) {
+            return new ArrayList<String>();
+        }
+        
+        return newInd;
 
     }
 
     public static void main(String[] args) throws IOException {
         File root = new File("C:\\Users\\Vivian Ky\\Desktop\\X1");
         FileIndex ind = new FileIndex("C:\\Users\\Vivian Ky\\Desktop\\X1");
-        ind.createIndex(ind.getRoot());
-        ind.listFiles();
+
+        File[] f = root.listFiles();        
+        for(File a : f) {
+            System.out.println(a.getPath());
+        }
+
+        //List<String> diff= ind.indexDiff(root);
+        //System.out.println("diff has " + diff.size() + " items");
+        /*
+        if(diff.size() != 0) {
+        for(String a: diff) {
+            System.out.println(a);
+        }
+        }
+        else {
+            System.out.println("no diff");
+        }
+*/
+       // System.out.println(MimeType.type.get(".txt"));
+
+        //ind.createIndex(ind.getRoot());
+        //ind.listFiles();
+
         //ind.syncIndex(new File("C:\\Users\\Vivian Ky\\Desktop\\X1\\3+"));
         /*String[]  list = root.list();
         for(String a : list) {
