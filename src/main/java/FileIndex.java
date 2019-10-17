@@ -165,10 +165,54 @@ public class FileIndex {
     public void syncIndex(File syncFolder) throws IOException {
         createIndex(syncFolder);
 
+        List<String> files = getFiles(syncFolder);
 
+        List<String> diff = indexDiff(syncFolder);
 
+        if(diff.size() != 0) {
+            files.removeAll(intersection(files, diff));
+            if (files.size() != 0) {
+                uploadFile(syncFolder, files);
+            }
+        }
 
     }
+
+    /**
+     * 
+     */
+    public String getExt(String s) {
+        return s.substring(s.lastIndexOf('.'));
+    }
+
+    /**
+     * 
+     * @param f
+     * @return
+     */
+    public void uploadFile(File cur_dir, List<String> l) {
+        for(String a : l) {
+            File cur_f = new File(cur_dir, a);
+
+        }
+    }
+
+    /**
+     * Get a list of files in the directory
+     */
+    public List<String> getFiles(File f) {
+        String[] cur = f.list();
+        List<String> rt = new ArrayList<String>();
+
+        for(String a : cur) {
+            File file = new File(f, a);
+            if(file.isFile()) {
+                rt.add(a);
+            }
+        }
+
+        return rt;
+    } 
 
     public List<String> union(List<String> list1, List<String> list2) {
         Set<String> set = new HashSet<String>();
@@ -224,11 +268,13 @@ public class FileIndex {
         File root = new File("C:\\Users\\Vivian Ky\\Desktop\\X1");
         FileIndex ind = new FileIndex("C:\\Users\\Vivian Ky\\Desktop\\X1");
 
-        File[] f = root.listFiles();        
-        for(File a : f) {
-            System.out.println(a.getPath());
+        System.out.println("ext is " + ind.getExt(".index.txt"));
+/*
+        List<String> f = ind.getFiles(root);        
+        for(String a : f) {
+            System.out.println(a);
         }
-
+*/
         //List<String> diff= ind.indexDiff(root);
         //System.out.println("diff has " + diff.size() + " items");
         /*
