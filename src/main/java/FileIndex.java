@@ -60,8 +60,8 @@ public class FileIndex {
      * @return
      * @throws IOException
      */
-    public boolean indexExists(File f) {
-        File cur = new File(f, INDEX);
+    public boolean indexExists(File cur_dir) {
+        File cur = new File(cur_dir, INDEX);
 
         return cur.exists();
     }

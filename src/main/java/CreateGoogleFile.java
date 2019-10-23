@@ -9,8 +9,27 @@ import com.google.api.client.http.FileContent;
 import com.google.api.client.http.InputStreamContent;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
+import com.google.api.services.drive.model.FileList;
 
 public class CreateGoogleFile {
+    public static void getFileLists() throws IOException{
+        Drive driveService = GoogleDriveUtils.getDriveService();
+String pageToken = null;
+do {
+  FileList result = driveService.files().list()
+      .setQ("mimeType='application/vnd.google-apps.folder' and name = 'X1'")
+      .setSpaces("drive")
+      .setFields("nextPageToken, files(id, name)")
+      .setPageToken(pageToken)
+      .execute();
+      
+  for (File file : result.getFiles()) {
+    System.out.printf("Found file: %s (%s)\n",
+        file.getName(), file.getId());
+  }
+  pageToken = result.getNextPageToken();
+} while (pageToken != null);
+    }
     private static File _createGoogleFile(String googleFolderIdParent, String contentType,
         String customFileName, AbstractInputStreamContent uploadStreamContent) throws IOException {
             
@@ -55,6 +74,7 @@ public class CreateGoogleFile {
     }
 
     public static void main(String[] args) throws IOException {
+        /*
         //placeholder File
         //update to make generic 
         java.io.File uploadFile = new java.io.File(System.getProperty("user.home"), "Desktop\\email.txt");
@@ -66,6 +86,8 @@ public class CreateGoogleFile {
         System.out.println("WebViewLik: " + googleFile.getWebViewLink());
 
         System.out.println("Done");
+        */
+        getFileLists();
     }
 
 
