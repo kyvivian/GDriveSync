@@ -12,23 +12,24 @@ import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 
 public class CreateGoogleFile {
-    public static void getFileLists() throws IOException{
+    public static void getParentId(String folderName) throws IOException{
         Drive driveService = GoogleDriveUtils.getDriveService();
-String pageToken = null;
-do {
-  FileList result = driveService.files().list()
-      .setQ("mimeType='application/vnd.google-apps.folder' and name = 'X1'")
-      .setSpaces("drive")
-      .setFields("nextPageToken, files(id, name)")
-      .setPageToken(pageToken)
-      .execute();
+        String queue = "mimeType= 'application/vnd.google-apps.folder' and name = '" + folderName + "'"; 
+        String pageToken = null;
+        do {
+          FileList result = driveService.files().list()
+          .setQ(queue)
+          .setFields("nextPageToken, files(id, name)")
+          .setPageToken(pageToken)
+          .execute();
       
-  for (File file : result.getFiles()) {
-    System.out.printf("Found file: %s (%s)\n",
-        file.getName(), file.getId());
-  }
-  pageToken = result.getNextPageToken();
-} while (pageToken != null);
+          //.setSpaces("drive")
+          for (File file : result.getFiles()) {
+            System.out.printf("Found file: %s (%s)\n",
+            file.getName(), file.getId());
+          }
+          pageToken = result.getNextPageToken();
+        } while (pageToken != null);
     }
     private static File _createGoogleFile(String googleFolderIdParent, String contentType,
         String customFileName, AbstractInputStreamContent uploadStreamContent) throws IOException {
@@ -87,7 +88,7 @@ do {
 
         System.out.println("Done");
         */
-        getFileLists();
+        getParentId("Dongpyo");
     }
 
 
