@@ -98,7 +98,7 @@ public class FileIndex {
         }
 
         //get the index list 
-        String[] fileList = root_dir.list();
+        String[] fileList = cur_dir.list();
 
         Writer writeFile = null;
 
@@ -199,10 +199,10 @@ public class FileIndex {
      * @return
      */
     public void uploadFile(File cur_dir, List<String> l) throws IOException{
+        List<String> pids = CreateGoogleFile.getParentId(cur_dir.getName());
+        String parent = pids.get(0);
         for(String a : l) {
             File cur_f = new File(cur_dir, a);
-            List<String> pids = CreateGoogleFile.getParentId(cur_dir.getName());
-            String parent = pids.get(0);
             String contentType = MimeType.type.get(getExt(a));
             CreateGoogleFile.createGoogleFile(parent, contentType, a, cur_f);
             System.out.printf("Uploading %s", cur_f.getName());
