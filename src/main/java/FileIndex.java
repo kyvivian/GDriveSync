@@ -12,6 +12,9 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import com.google.api.services.drive.Drive.Comments.Create;
+
 import java.nio.file.Files;
 
 public class FileIndex {
@@ -190,15 +193,19 @@ public class FileIndex {
      * @param f
      * @return
      */
-    public void uploadFile(File cur_dir, List<String> l) {
+    public void uploadFile(File cur_dir, List<String> l) throws IOException{
         for(String a : l) {
             File cur_f = new File(cur_dir, a);
-
+            List<String> pids = CreateGoogleFile.getParentId(cur_dir.getName());
+            String parent = pids.get(0);
+            String contentType = MimeType.type.get(getExt(a));
+            CreateGoogleFile.createGoogleFile(parent, contentType, a, cur_f);
         }
     }
 
     /**
-     * Get a list of files in the directory
+     * Get a list of files in the directory. 
+     * It will print out the file name, not the absolute path.
      */
     public List<String> getFiles(File f) {
         String[] cur = f.list();
@@ -267,14 +274,15 @@ public class FileIndex {
     public static void main(String[] args) throws IOException {
         File root = new File("C:\\Users\\Vivian Ky\\Desktop\\X1");
         FileIndex ind = new FileIndex("C:\\Users\\Vivian Ky\\Desktop\\X1");
+        //List<String> files = ind.getFiles(root);
+        //ind.uploadFile(root, files);
 
-        System.out.println("ext is " + ind.getExt(".index.txt"));
-/*
-        List<String> f = ind.getFiles(root);        
+        System.out.println("ext is " + MimeType.type.get(ind.getExt(".index.txt")));
+/*        List<String> f = ind.getFiles(root);        
         for(String a : f) {
             System.out.println(a);
         }
-*/
+        */
         //List<String> diff= ind.indexDiff(root);
         //System.out.println("diff has " + diff.size() + " items");
         /*

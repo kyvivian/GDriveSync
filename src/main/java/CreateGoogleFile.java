@@ -1,5 +1,6 @@
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -12,7 +13,8 @@ import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 
 public class CreateGoogleFile {
-    public static void getParentId(String folderName) throws IOException{
+    public static List<String> getParentId(String folderName) throws IOException{
+        List<String> pid = new ArrayList<String>();
         Drive driveService = GoogleDriveUtils.getDriveService();
         String queue = "mimeType= 'application/vnd.google-apps.folder' and name = '" + folderName + "'"; 
         String pageToken = null;
@@ -25,11 +27,14 @@ public class CreateGoogleFile {
       
           //.setSpaces("drive")
           for (File file : result.getFiles()) {
+            pid.add(file.getId());
             System.out.printf("Found file: %s (%s)\n",
             file.getName(), file.getId());
           }
           pageToken = result.getNextPageToken();
         } while (pageToken != null);
+
+        return pid;
     }
     private static File _createGoogleFile(String googleFolderIdParent, String contentType,
         String customFileName, AbstractInputStreamContent uploadStreamContent) throws IOException {
@@ -88,7 +93,8 @@ public class CreateGoogleFile {
 
         System.out.println("Done");
         */
-        getParentId("Dongpyo");
+        List<String> pid = getParentId("Minhee");
+        System.out.printf("pid has %d items: %s", pid.size(), pid.get(0));
     }
 
 
