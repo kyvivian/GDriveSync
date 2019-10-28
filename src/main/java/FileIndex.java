@@ -166,19 +166,24 @@ public class FileIndex {
      * Syncs only the current directory
      */
     public void syncIndex(File syncFolder) throws IOException {
-        createIndex(syncFolder);
+        if(indexExists(syncFolder)) {
+            List<String> files = getFiles(syncFolder);
 
-        List<String> files = getFiles(syncFolder);
+            List<String> diff = indexDiff(syncFolder);
 
-        List<String> diff = indexDiff(syncFolder);
-
-        if(diff.size() != 0) {
-            files.removeAll(intersection(files, diff));
-            if (files.size() != 0) {
-                uploadFile(syncFolder, files);
+            if(diff.size() != 0) {
+                files.removeAll(intersection(files, diff));
+                if (files.size() != 0) {
+                    uploadFile(syncFolder, files);
+                }
             }
+            createIndex(syncFolder);
         }
-
+        else {
+            createIndex(syncFolder);
+            List<String> files = getFiles(syncFolder);
+            uploadFile(syncFolder, files);
+        }
     }
 
     /**
@@ -200,6 +205,7 @@ public class FileIndex {
             String parent = pids.get(0);
             String contentType = MimeType.type.get(getExt(a));
             CreateGoogleFile.createGoogleFile(parent, contentType, a, cur_f);
+            System.out.printf("Uploading %s", cur_f.getName());
         }
     }
 
@@ -244,7 +250,7 @@ public class FileIndex {
 
     /**
      * Gets the difference between the index and the current list of files
-     * in the directory and then updates the index
+     * in the directory 
      * 
      * @param args
      * @throws IOException
@@ -272,10 +278,11 @@ public class FileIndex {
     }
 
     public static void main(String[] args) throws IOException {
-        File root = new File("C:\\Users\\Vivian Ky\\Desktop\\X1");
+        File root = new File("C:\\Users\\Vivian Ky\\Desktop\\X1\\Pairs\\Minhee");
         FileIndex ind = new FileIndex("C:\\Users\\Vivian Ky\\Desktop\\X1");
         //List<String> files = ind.getFiles(root);
         //ind.uploadFile(root, files);
+        ind.syncIndex(root);
 
         System.out.println("ext is " + MimeType.type.get(ind.getExt(".index.txt")));
 /*        List<String> f = ind.getFiles(root);        
